@@ -769,12 +769,15 @@ PlasmoidItem {
                                     Layout.alignment: Qt.AlignVCenter
                                     popup.width: Math.max(width, popup.implicitWidth)
                                     popup.x: width - popup.width
-                                    onCurrentIndexChanged: {
+                                    onActivated: {
                                         if (root.bluetoothCodec && currentIndex >= 0) {
                                             var options = root.bluetoothCodec.options || []
                                             if (options[currentIndex]) {
-                                                root.bluetoothCodec.selected = options[currentIndex][0]
-                                                backend.setCapability("bluetoothCodec", root.currentAddress(), options[currentIndex][0])
+                                                var nextValue = options[currentIndex][0]
+                                                if (root.bluetoothCodec.selected !== nextValue) {
+                                                    root.bluetoothCodec.selected = nextValue
+                                                    backend.setCapability("bluetoothCodec", root.currentAddress(), nextValue)
+                                                }
                                             }
                                         }
                                     }
