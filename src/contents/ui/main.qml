@@ -35,6 +35,7 @@ PlasmoidItem {
     readonly property var endCallData: capabilities?.endCall ?? null
     readonly property var bluetoothCodec: capabilities?.bluetoothCodec ?? null
     readonly property bool backendConnected: backend.socketState === WebSocket.Open
+    readonly property bool hasConnectedDevice: backendConnected && hasInfo
     property int selectedAnc: ancData?.selected ?? 0
     readonly property var ancModes: ({ OFF: 1, TRANSPARENCY: 2, ADAPTIVE: 4, WIND: 8, ANC: 16 })
     function currentAddress() { return infoData?.address }
@@ -87,6 +88,7 @@ PlasmoidItem {
     toolTipMainText: Plasmoid.title && Plasmoid.title.length ? Plasmoid.title : qsTr("MagicPods")
     toolTipSubText: trayTooltip
     toolTipTextFormat: Text.PlainText
+    Plasmoid.status: hasConnectedDevice ? PlasmaCore.Types.ActiveStatus : PlasmaCore.Types.PassiveStatus
 
 
     compactRepresentation: MouseArea {
@@ -767,12 +769,15 @@ PlasmoidItem {
                                     Layout.alignment: Qt.AlignVCenter
                                     popup.width: Math.max(width, popup.implicitWidth)
                                     popup.x: width - popup.width
-                                    onCurrentIndexChanged: {
+                                    onActivated: {
                                         if (root.bluetoothCodec && currentIndex >= 0) {
                                             var options = root.bluetoothCodec.options || []
                                             if (options[currentIndex]) {
-                                                root.bluetoothCodec.selected = options[currentIndex][0]
-                                                backend.setCapability("bluetoothCodec", root.currentAddress(), options[currentIndex][0])
+                                                var nextValue = options[currentIndex][0]
+                                                if (root.bluetoothCodec.selected !== nextValue) {
+                                                    root.bluetoothCodec.selected = nextValue
+                                                    backend.setCapability("bluetoothCodec", root.currentAddress(), nextValue)
+                                                }
                                             }
                                         }
                                     }
